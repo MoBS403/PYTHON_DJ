@@ -4,4 +4,4 @@ Pillow
 sqlparse
 tzdata
 gunicorn
-....
+python-decouple

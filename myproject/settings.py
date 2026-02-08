@@ -3,8 +3,8 @@ Django settings for myproject project (Render-ready).
 """
 
 from pathlib import Path
-from decouple import AutoConfig
 import os
+from decouple import AutoConfig
 import dj_database_url
 
 # ======================================================
@@ -29,9 +29,7 @@ ALLOWED_HOSTS = config(
 ).split(",")
 
 # Render (CSRF)
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.onrender.com",
-]
+CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
 
 # Proxy SSL (Render)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -52,7 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "myapp",
+    "myapp",  # sua app principal
 ]
 
 # ======================================================
@@ -96,23 +94,23 @@ TEMPLATES = [
 ]
 
 # ======================================================
-# BANCO DE DADOS (PostgreSQL no Render, SQLite local)
+# BANCO DE DADOS
 # ======================================================
 if os.getenv("DB_HOST"):
-    # PostgreSQL remoto (Render/Aiven)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
             "HOST": os.getenv("DB_HOST"),
-            "PORT": os.getenv("DB_PORT", "5432"),
-            "OPTIONS": {"sslmode": os.getenv("DB_SSLMODE", "require")},
+            "PORT": os.getenv("DB_PORT", "14612"),
+            "NAME": os.getenv("DB_NAME", "defaultdb"),
+            "USER": os.getenv("DB_USER", "avnadmin"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "OPTIONS": {
+                "sslmode": os.getenv("DB_SSLMODE", "require"),
+            },
         }
     }
 else:
-    # SQLite local
     DATABASES = {
         "default": dj_database_url.parse(
             os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
@@ -160,3 +158,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # LOCALE
 # ======================================================
 LOCALE_PATHS = [BASE_DIR / "locale"]
+
+# ======================================================
+# EMAIL (opcional)
+# ======================================================
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "localhost"
+EMAIL_PORT = 25

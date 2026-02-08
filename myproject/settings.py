@@ -1,10 +1,11 @@
 """
-Django settings for myproject project.
+Django settings for myproject project (Render-ready).
 """
 
 from pathlib import Path
-from decouple import AutoConfig, config
+from decouple import AutoConfig
 import os
+import dj_database_url
 
 # ======================================================
 # BASE DIR
@@ -36,9 +37,9 @@ CSRF_TRUSTED_ORIGINS = [
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if not DEBUG:
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
 
 # ======================================================
 # APLICAÇÕES
@@ -72,7 +73,6 @@ MIDDLEWARE = [
 # URLS / WSGI / ASGI
 # ======================================================
 ROOT_URLCONF = "myproject.urls"
-
 WSGI_APPLICATION = "myproject.wsgi.application"
 ASGI_APPLICATION = "myproject.asgi.application"
 
@@ -98,29 +98,26 @@ TEMPLATES = [
 # ======================================================
 # BANCO DE DADOS (PostgreSQL no Render, SQLite local)
 # ======================================================
-import dj_database_url
-
 if os.getenv("DB_HOST"):
+    # PostgreSQL remoto (Render/Aiven)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": config("DB_NAME"),
-            "USER": config("DB_USER"),
-            "PASSWORD": config("DB_PASSWORD"),
-            "HOST": config("DB_HOST"),
-            "PORT": config("DB_PORT", default="5432"),
-            "OPTIONS": {
-                "sslmode": config("DB_SSLMODE", default="require"),
-            },
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+            "OPTIONS": {"sslmode": os.getenv("DB_SSLMODE", "require")},
         }
     }
 else:
+    # SQLite local
     DATABASES = {
         "default": dj_database_url.parse(
             os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
         )
     }
-
 
 # ======================================================
 # VALIDAÇÃO DE SENHAS
@@ -162,6 +159,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ======================================================
 # LOCALE
 # ======================================================
-LOCALE_PATHS = [
-    BASE_DIR / "locale",
-]
+LOCALE_PATHS = [BASE_DIR / "locale"]

@@ -105,19 +105,22 @@ TEMPLATES = [
 # BANCO DE DADOS (Aiven PostgreSQL / SQLite local)
 # ======================================================
 if os.getenv("DB_HOST"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": os.getenv("DB_PORT", "14612"),
-            "NAME": os.getenv("DB_NAME", "defaultdb"),
-            "USER": os.getenv("DB_USER", "avnadmin"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "OPTIONS": {
-                "sslmode": os.getenv("DB_SSLMODE", "require"),
-            },
-        }
+ import os
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+        'OPTIONS': {
+            'sslmode': os.environ.get('DB_SSLMODE', 'require'),
+        },
     }
+}
+
 else:
     DATABASES = {
         "default": dj_database_url.parse(

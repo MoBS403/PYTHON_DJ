@@ -6,23 +6,29 @@ from pathlib import Path
 import os
 from decouple import AutoConfig
 
-# Caminho base do projeto
+# ======================================================
+# BASE DIR
+# ======================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Força decouple a ler o .env na raiz
+# Força leitura do .env na raiz
 config = AutoConfig(search_path=BASE_DIR)
 
-# Diretórios para templates, estáticos e mídia
-TEMP_DIR = os.path.join(BASE_DIR, "templates")
-STATIC_DIR = os.path.join(BASE_DIR, "static")
-MEDIA_DIR = os.path.join(BASE_DIR, "media")
+# ======================================================
+# SEGURANÇA
+# ======================================================
+SECRET_KEY = config("SECRET_KEY")
 
-# Chave secreta e debug
-SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-# Aplicações instaladas
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="localhost,127.0.0.1"
+).split(",")
+
+# ======================================================
+# APLICAÇÕES
+# ======================================================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -30,12 +36,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "myapp",  # Substitua pelo nome do seu app
+
+    "myapp",
 ]
 
-# Middlewares
+# ======================================================
+# MIDDLEWARE
+# ======================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Render
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -44,15 +54,21 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# URLs e WSGI
+# ======================================================
+# URLS / WSGI / ASGI
+# ======================================================
 ROOT_URLCONF = "myproject.urls"
-WSGI_APPLICATION = "myproject.wsgi.application"
 
-# Templates
+WSGI_APPLICATION = "myproject.wsgi.application"
+ASGI_APPLICATION = "myproject.asgi.application"
+
+# ======================================================
+# TEMPLATES
+# ======================================================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [TEMP_DIR],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -65,22 +81,26 @@ TEMPLATES = [
     },
 ]
 
-# Banco de dados PostgreSQL (Aiven)
+# ======================================================
+# BANCO DE DADOS (PostgreSQL Aiven)
+# ======================================================
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
-        'OPTIONS': {
-            'sslmode': config('DB_SSLMODE', default='require'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT", default="5432"),
+        "OPTIONS": {
+            "sslmode": config("DB_SSLMODE", default="require"),
         },
     }
 }
 
-# Validações de senha
+# ======================================================
+# SENHAS
+# ======================================================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -88,22 +108,42 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Idioma e fuso horário
+# ======================================================
+# INTERNACIONALIZAÇÃO
+# ======================================================
 LANGUAGE_CODE = "pt-br"
+
 TIME_ZONE = "America/Sao_Paulo"
+
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
-# Arquivos estáticos e mídia
+# ======================================================
+# STATIC FILES
+# ======================================================
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [STATIC_DIR]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# ======================================================
+# MEDIA FILES
+# ======================================================
 MEDIA_URL = "/media/"
-MEDIA_ROOT = MEDIA_DIR
+MEDIA_ROOT = BASE_DIR / "media"
 
-# Tipo de chave primária padrão
+# ======================================================
+# PADRÕES
+# ======================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Localização para traduções
-LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
+# ======================================================
+# LOCALE
+# ======================================================
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]

@@ -110,6 +110,7 @@ if os.getenv("DB_HOST"):
             },
         }
     }
+
 else:
     DATABASES = {
         "default": dj_database_url.parse(

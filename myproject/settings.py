@@ -95,9 +95,9 @@ TEMPLATES = [
     },
 ]
 
-# ======================================================
-# BANCO DE DADOS (PostgreSQL no Render, SQLite local)
-# ======================================================
+======================================================
+BANCO DE DADOS (PostgreSQL no Render, SQLite local)
+======================================================
 if os.getenv("DB_HOST"):
     # Configuração PostgreSQL (Render/Aiven)
     DATABASES = {
@@ -115,12 +115,11 @@ if os.getenv("DB_HOST"):
     }
 else:
     # Configuração SQLite local
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+   DATABASES = {
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    )
+}
 
 # ======================================================
 # VALIDAÇÃO DE SENHAS

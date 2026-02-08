@@ -101,7 +101,6 @@ TEMPLATES = [
 import dj_database_url
 
 if os.getenv("DB_HOST"):
-    # Configuração PostgreSQL (Render/Aiven)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -116,7 +115,6 @@ if os.getenv("DB_HOST"):
         }
     }
 else:
-    # Configuração SQLite local
     DATABASES = {
         "default": dj_database_url.parse(
             os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")

@@ -16,7 +16,11 @@ config = AutoConfig(search_path=BASE_DIR)
 # ======================================================
 # SEGURANÇA
 # ======================================================
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default="django-insecure-dev-key-123456789"
+)
+
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
@@ -34,9 +38,10 @@ CSRF_TRUSTED_ORIGINS = [
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
+
 
 # ======================================================
 # APLICAÇÕES
@@ -95,21 +100,57 @@ TEMPLATES = [
 ]
 
 # ======================================================
-# BANCO DE DADOS (PostgreSQL – Aiven)
+# # BANCO DE DADOS (PostgreSQL – Aiven)
+# # ======================================================
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": config("DB_NAME", default="db.sqlite3"),
+#         "USER": config("DB_USER"),
+#         "PASSWORD": config("DB_PASSWORD"),
+#         "HOST": config("DB_HOST"),
+#         "PORT": config("DB_PORT", default="5432"),
+#         "OPTIONS": {
+#             "sslmode": config("DB_SSLMODE", default="require"),
+#         },
+#     }
+# }
+
 # ======================================================
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT", default="5432"),
-        "OPTIONS": {
-            "sslmode": config("DB_SSLMODE", default="require"),
-        },
+# BANCO DE DADOS
+# ======================================================
+import os
+
+if os.getenv("DB_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": config("DB_PORT", default="5432"),
+            "OPTIONS": {
+                "sslmode": config("DB_SSLMODE", default="require"),
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         "NAME": config("DB_NAME", default="db.sqlite3"),
+#     }
+# }
 
 # ======================================================
 # SENHAS

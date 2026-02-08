@@ -3,9 +3,8 @@ Django settings for myproject project.
 """
 
 from pathlib import Path
-from decouple import AutoConfig
+from decouple import AutoConfig, config
 import os
-import dj_database_url
 
 # ======================================================
 # BASE DIR
@@ -99,14 +98,29 @@ TEMPLATES = [
 # ======================================================
 # BANCO DE DADOS (PostgreSQL no Render, SQLite local)
 # ======================================================
-DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ.get(
-            "DATABASE_URL",  # Render fornece essa variável
-            f"sqlite:///{BASE_DIR / 'db.sqlite3'}"  # fallback local
-        )
-    )
-}
+if os.getenv("DB_HOST"):
+    # Configuração PostgreSQL (Render/Aiven)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": config("DB_PORT", default="5432"),
+            "OPTIONS": {
+                "sslmode": config("DB_SSLMODE", default="require"),
+            },
+        }
+    }
+else:
+    # Configuração SQLite local
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # ======================================================
 # VALIDAÇÃO DE SENHAS

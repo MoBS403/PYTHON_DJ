@@ -3,7 +3,6 @@ Django settings for myproject project.
 """
 
 from pathlib import Path
-import os
 from decouple import AutoConfig
 
 # ======================================================
@@ -11,7 +10,7 @@ from decouple import AutoConfig
 # ======================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Força leitura do .env na raiz
+# Lê o .env na raiz do projeto
 config = AutoConfig(search_path=BASE_DIR)
 
 # ======================================================
@@ -25,6 +24,19 @@ ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="localhost,127.0.0.1"
 ).split(",")
+
+# Render (CSRF)
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+]
+
+# Proxy SSL (Render)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
 
 # ======================================================
 # APLICAÇÕES
@@ -45,7 +57,7 @@ INSTALLED_APPS = [
 # ======================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Render
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -82,7 +94,7 @@ TEMPLATES = [
 ]
 
 # ======================================================
-# BANCO DE DADOS (PostgreSQL Aiven)
+# BANCO DE DADOS (PostgreSQL – Aiven)
 # ======================================================
 DATABASES = {
     "default": {
@@ -119,7 +131,7 @@ USE_I18N = True
 USE_TZ = True
 
 # ======================================================
-# STATIC FILES
+# STATIC FILES (Render + WhiteNoise)
 # ======================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -128,13 +140,18 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
 
 # ======================================================
 # MEDIA FILES
+# 👉 imagens salvas em: media/images/posts
+# ⚠️ Render não persiste arquivos
 # ======================================================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
 
 # ======================================================
 # PADRÕES

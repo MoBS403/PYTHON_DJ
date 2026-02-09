@@ -1,24 +1,16 @@
-"""
-Django settings for myproject
-(Render + Aiven PostgreSQL)
-"""
-
 from pathlib import Path
 import os
 import dj_database_url
 
-# ======================================================
-# BASE DIR
-# ======================================================
+# =========================
+# BASE
+# =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ======================================================
-# SEGURANÇA
-# ======================================================
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-fallback-key"
-)
+# =========================
+# SECURITY
+# =========================
+SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-secret-key")
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
@@ -33,18 +25,9 @@ CSRF_TRUSTED_ORIGINS = [
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = False  # Render já força HTTPS
-
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = "DENY"
-
-# ======================================================
-# APLICAÇÕES
-# ======================================================
+# =========================
+# APPLICATIONS
+# =========================
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -53,12 +36,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "myapp",
+    "myapp.apps.MyappConfig",
 ]
 
-# ======================================================
+# =========================
 # MIDDLEWARE
-# ======================================================
+# =========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -70,17 +53,16 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# ======================================================
-# URLS / WSGI / ASGI
-# ======================================================
+# =========================
+# URL / WSGI
+# =========================
 ROOT_URLCONF = "myproject.urls"
 
 WSGI_APPLICATION = "myproject.wsgi.application"
-ASGI_APPLICATION = "myproject.asgi.application"
 
-# ======================================================
+# =========================
 # TEMPLATES
-# ======================================================
+# =========================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -97,20 +79,30 @@ TEMPLATES = [
     },
 ]
 
-# ======================================================
-# BANCO DE DADOS (Render + Aiven)
-# ======================================================
-DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+# =========================
+# DATABASE
+# =========================
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# ======================================================
-# VALIDAÇÃO DE SENHAS
-# ======================================================
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+# =========================
+# PASSWORD VALIDATION
+# =========================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -118,43 +110,22 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# ======================================================
-# INTERNACIONALIZAÇÃO
-# ======================================================
+# =========================
+# LANGUAGE / TIME
+# =========================
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
 
-# ======================================================
-# STATIC FILES (WhiteNoise)
-# ======================================================
+# =========================
+# STATIC FILES
+# =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
-
-# ======================================================
-# MEDIA FILES
-# ======================================================
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-# ======================================================
-# PADRÕES
-# ======================================================
+# =========================
+# DEFAULTS
+# =========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# ======================================================
-# LOCALE
-# ======================================================
-LOCALE_PATHS = [
-    BASE_DIR / "locale",
-]
-
-# ======================================================
-# EMAIL (DEV)
-# ======================================================
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

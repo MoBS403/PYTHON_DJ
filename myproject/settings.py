@@ -117,15 +117,17 @@ TEMPLATES = [
 #         }
 #     }
 # else:
+# ======================================================
+# BANCO DE DADOS
+# ======================================================
 
-    DATABASES = {
+DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
         ssl_require=True,
     )
 }
-
 
 # ======================================================
 # VALIDAÇÃO DE SENHAS

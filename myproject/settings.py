@@ -1,32 +1,30 @@
 """
-Django settings for myproject project
-(Render + Aiven PostgreSQL ready)
+Django settings for myproject
+(Render + Aiven PostgreSQL)
 """
 
 from pathlib import Path
 import os
-from decouple import AutoConfig
 import dj_database_url
 
 # ======================================================
 # BASE DIR
 # ======================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
-config = AutoConfig(search_path=BASE_DIR)
 
 # ======================================================
 # SEGURANÇA
 # ======================================================
-SECRET_KEY = config(
+SECRET_KEY = os.environ.get(
     "SECRET_KEY",
-    default="django-insecure-1234567890abcdef1234567890abcdef"
+    "django-insecure-fallback-key"
 )
 
-DEBUG = config("DEBUG", default=False, cast=bool)
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = config(
+ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
-    default="localhost,127.0.0.1"
+    "localhost,127.0.0.1"
 ).split(",")
 
 CSRF_TRUSTED_ORIGINS = [
@@ -38,7 +36,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = False
+    SECURE_SSL_REDIRECT = False  # Render já força HTTPS
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -99,19 +97,16 @@ TEMPLATES = [
     },
 ]
 
-
 # ======================================================
 # BANCO DE DADOS (Render + Aiven)
 # ======================================================
-
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
+    "default": dj_database_url.parse(
+        os.environ.get("DATABASE_URL"),
         conn_max_age=600,
         ssl_require=True,
     )
 }
-
 
 # ======================================================
 # VALIDAÇÃO DE SENHAS
@@ -136,8 +131,10 @@ USE_TZ = True
 # ======================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+STATICFILES_STORAGE = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+)
 
 # ======================================================
 # MEDIA FILES
@@ -158,6 +155,6 @@ LOCALE_PATHS = [
 ]
 
 # ======================================================
-# EMAIL (dev seguro)
+# EMAIL (DEV)
 # ======================================================
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

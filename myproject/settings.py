@@ -1,5 +1,6 @@
 """
-Django settings for myproject project (Render + Aiven ready)
+Django settings for myproject project
+(Render + Aiven PostgreSQL ready)
 """
 
 from pathlib import Path
@@ -28,20 +29,17 @@ ALLOWED_HOSTS = config(
     default="localhost,127.0.0.1"
 ).split(",")
 
-# CSRF (Render)
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
 ]
 
-# Proxy HTTPS (Render)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = False  # Render já força HTTPS
+    SECURE_SSL_REDIRECT = False
 
-# Headers de segurança
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
@@ -102,25 +100,22 @@ TEMPLATES = [
 ]
 
 # ======================================================
-# BANCO DE DADOS (Aiven PostgreSQL / SQLite local)
+# BANCO DE DADOS
 # ======================================================
-if os.getenv("DB_HOST"):
- import os
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-        'OPTIONS': {
-            'sslmode': os.environ.get('DB_SSLMODE', 'require'),
-        },
+if os.environ.get("DB_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME"),
+            "USER": os.environ.get("DB_USER"),
+            "PASSWORD": os.environ.get("DB_PASSWORD"),
+            "HOST": os.environ.get("DB_HOST"),
+            "PORT": os.environ.get("DB_PORT"),
+            "OPTIONS": {
+                "sslmode": os.environ.get("DB_SSLMODE", "require"),
+            },
+        }
     }
-}
-
 else:
     DATABASES = {
         "default": dj_database_url.parse(
@@ -150,7 +145,7 @@ USE_I18N = True
 USE_TZ = True
 
 # ======================================================
-# STATIC FILES (WhiteNoise + Render)
+# STATIC FILES (WhiteNoise)
 # ======================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -176,6 +171,6 @@ LOCALE_PATHS = [
 ]
 
 # ======================================================
-# EMAIL (modo seguro)
+# EMAIL (dev seguro)
 # ======================================================
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
